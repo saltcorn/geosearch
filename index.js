@@ -6,6 +6,8 @@ const {
   domReady,
   style,
 } = require("@saltcorn/markup/tags");
+const { renderForm } = require("@saltcorn/markup");
+
 const View = require("@saltcorn/data/models/view");
 const Workflow = require("@saltcorn/data/models/workflow");
 const Table = require("@saltcorn/data/models/table");
@@ -87,7 +89,7 @@ const get_state_fields = async (table_id) => {
   });
 };
 
-const searchForm = () =>
+const searchForm = (viewname) =>
   new Form({
     action: `/view/${viewname}`,
     methodGET: true,
@@ -102,7 +104,7 @@ const run = async (
   extraArgs
 ) => {
   if (!state._locq) {
-    return renderForm(searchForm(), req.csrfToken());
+    return renderForm(searchForm(viewname), extraArgs.req.csrfToken());
   } else {
     const resview = await View.findOne({ name: result_view });
     if (!resview)
@@ -113,8 +115,9 @@ const run = async (
       );
 
     const tbl = await Table.findOne({ id: table_id });
+    const fields = await tbl.getFields();
     const { _locq, ...state_noloc } = state;
-    const qstate = await stateFieldsToWhere({ fields, state_noloc });
+    const qstate = await stateFieldsToWhere({ fields, state: state_noloc });
     const response = await geocoder.search({ q: _locq });
     if (response.length > 0) {
       const fetchedRows = await tbl.getRows(qstate, {
@@ -128,11 +131,14 @@ const run = async (
         fetchedRows
       );
       return (
-        renderForm(searchForm(), req.csrfToken()) +
+        renderForm(searchForm(viewname), extraArg.sreq.csrfToken()) +
         div(rendered.map(({ html }) => div(html)))
       );
     } else {
-      return renderForm(searchForm(), req.csrfToken()) + div("Not found");
+      return (
+        renderForm(searchForm(viewname), extraArgs.req.csrfToken()) +
+        div("Not found")
+      );
     }
   }
 };
