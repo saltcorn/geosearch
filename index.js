@@ -11,6 +11,7 @@ const { renderForm } = require("@saltcorn/markup");
 const View = require("@saltcorn/data/models/view");
 const Workflow = require("@saltcorn/data/models/workflow");
 const Table = require("@saltcorn/data/models/table");
+const db = require("@saltcorn/data/db");
 const Form = require("@saltcorn/data/models/form");
 const Field = require("@saltcorn/data/models/field");
 const { stateFieldsToWhere } = require("@saltcorn/data/plugin-helper");
@@ -89,13 +90,6 @@ const get_state_fields = async (table_id) => {
   });
 };
 
-const searchForm = (viewname) =>
-  new Form({
-    action: `/view/${viewname}`,
-    methodGET: true,
-    fields: [{ name: "_locq", label: "Location", input_type: "search" }],
-  });
-
 const run = async (
   table_id,
   viewname,
@@ -103,8 +97,14 @@ const run = async (
   state,
   extraArgs
 ) => {
+  const form = new Form({
+    action: `/view/${viewname}`,
+    methodGET: true,
+    noSubmitButton: true,
+    fields: [{ name: "_locq", label: "Location", input_type: "search" }],
+  });
   if (!state._locq) {
-    return renderForm(searchForm(viewname), extraArgs.req.csrfToken());
+    return renderForm(form, extraArgs.req.csrfToken());
   } else {
     const resview = await View.findOne({ name: result_view });
     if (!resview)
@@ -117,11 +117,21 @@ const run = async (
     const tbl = await Table.findOne({ id: table_id });
     const fields = await tbl.getFields();
     const { _locq, ...state_noloc } = state;
+    form.values._locq = _locq;
     const qstate = await stateFieldsToWhere({ fields, state: state_noloc });
     const response = await geocoder.search({ q: _locq });
     if (response.length > 0) {
+      //https://stackoverflow.com/a/39298241
+      const cos_lat_2 = Math.pow(
+        Math.cos((response[0].lat * Math.PI) / 180),
+        2
+      );
+      const latfield = db.sqlsanitize(latitude_field);
+      const longfield = db.sqlsanitize(longtitude_field);
       const fetchedRows = await tbl.getRows(qstate, {
-        orderBy: `(${longtitude_field}, ${latitude_field}) <@> (${response[0].lon}, ${response[0].lat})`,
+        orderBy: {
+          sql: `((${latfield}-${response[0].lat})*(${latfield}-${response[0].lat})) + ((${longfield} - ${response[0].lon})*(${longfield} - ${response[0].lon})*${cos_lat_2})`,
+        },
       });
       const rendered = await resview.viewtemplateObj.renderRows(
         tbl,
@@ -130,15 +140,13 @@ const run = async (
         extraArgs,
         fetchedRows
       );
+
       return (
-        renderForm(searchForm(viewname), extraArg.sreq.csrfToken()) +
-        div(rendered.map(({ html }) => div(html)))
+        renderForm(form, extraArgs.req.csrfToken()) +
+        div(rendered.map((h) => div(h)))
       );
     } else {
-      return (
-        renderForm(searchForm(viewname), extraArgs.req.csrfToken()) +
-        div("Not found")
-      );
+      return renderForm(form, extraArgs.req.csrfToken()) + div("Not found");
     }
   }
 };
