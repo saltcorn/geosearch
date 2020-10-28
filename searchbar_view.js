@@ -39,11 +39,11 @@ const configuration_workflow = () =>
 const get_state_fields = async (table_id) => [];
 
 const run = async (table_id, viewname, {}, state, extraArgs) => {
-  return search_bar(
-    "_locq",
-    state._locq,
-    "(function(v){v ? set_state_field('_locq', v):unset_state_field('_locq');})($('.search-bar').val())"
-  );
+  return search_bar("_locq", state._locq, {
+    placeHolder: "Enter Location...",
+    onClick:
+      "(function(v){v ? set_state_field('_locq', v):unset_state_field('_locq');})($('.search-bar').val())",
+  });
 };
 
 module.exports = {
