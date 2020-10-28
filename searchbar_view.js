@@ -1,6 +1,7 @@
 const {
   input,
   div,
+  a,
   text,
   script,
   domReady,
@@ -29,7 +30,13 @@ const configuration_workflow = () =>
           const fields = await table.getFields();
 
           return new Form({
-            fields: [],
+            fields: [
+              {
+                name: "mylocation",
+                label: "Allow current location",
+                type: "Bool",
+              },
+            ],
           });
         },
       },
@@ -38,12 +45,34 @@ const configuration_workflow = () =>
 
 const get_state_fields = async (table_id) => [];
 
-const run = async (table_id, viewname, {}, state, extraArgs) => {
-  return search_bar("_locq", state._locq, {
-    placeHolder: "Enter Location...",
-    onClick:
-      "(function(v){v ? set_state_field('_locq', v):unset_state_field('_locq');})($('.search-bar').val())",
-  });
+const usemylocscript = `
+function use_my_location() {
+  navigator.geolocation.getCurrentPosition(function(position) {
+    set_state_fields({
+      _loclat:position.coords.latitude,
+      _loclong:position.coords.longitude,
+    })    
+  })
+}
+`;
+
+const run = async (table_id, viewname, { mylocation }, state, extraArgs) => {
+  const round = (x) => Math.round(x * 100) / 100;
+  const placeHolder =
+    state._loclat && state._loclong
+      ? `[${round(state._loclat)}&deg;, ${round(state._loclong)}&deg;]`
+      : "Enter Location...";
+  return (
+    search_bar("_locq", state._locq, {
+      placeHolder,
+      onClick:
+        "(function(v){v ? set_state_field('_locq', v):unset_state_field('_locq');})($('.search-bar').val())",
+    }) +
+    (mylocation
+      ? a({ href: "javascript:use_my_location()" }, "Use my current location") +
+        script(usemylocscript)
+      : "")
+  );
 };
 
 module.exports = {

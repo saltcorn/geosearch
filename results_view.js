@@ -103,7 +103,7 @@ const run = async (
     noSubmitButton: true,
     fields: [{ name: "_locq", label: "Location", input_type: "search" }],
   });
-  if (!state._locq) {
+  if (!(state._locq || (state._loclat && state._loclong))) {
     return "";
   } else {
     const resview = await View.findOne({ name: result_view });
@@ -119,32 +119,35 @@ const run = async (
     const { _locq, ...state_noloc } = state;
     form.values._locq = _locq;
     const qstate = await stateFieldsToWhere({ fields, state: state_noloc });
-    const response = await geocoder.search({ q: _locq });
-    if (response.length > 0) {
-      //https://stackoverflow.com/a/39298241
-      const cos_lat_2 = Math.pow(
-        Math.cos((response[0].lat * Math.PI) / 180),
-        2
-      );
-      const latfield = db.sqlsanitize(latitude_field);
-      const longfield = db.sqlsanitize(longtitude_field);
-      const fetchedRows = await tbl.getRows(qstate, {
-        orderBy: {
-          sql: `((${latfield}-${response[0].lat})*(${latfield}-${response[0].lat})) + ((${longfield} - ${response[0].lon})*(${longfield} - ${response[0].lon})*${cos_lat_2})`,
-        },
-      });
-      const rendered = await resview.viewtemplateObj.renderRows(
-        tbl,
-        resview.name,
-        resview.configuration,
-        extraArgs,
-        fetchedRows
-      );
-
-      return div(rendered.map((h) => div(h)));
+    let lat, long;
+    if (state._locq) {
+      const response = await geocoder.search({ q: _locq });
+      if (response.length === 0) return div("Not found");
+      lat = response[0].lat;
+      long = response[0].lon;
     } else {
-      return div("Not found");
+      lat = state._loclat;
+      long = state._loclong;
     }
+    //https://stackoverflow.com/a/39298241
+    const cos_lat_2 = Math.pow(Math.cos((lat * Math.PI) / 180), 2);
+
+    const latfield = db.sqlsanitize(latitude_field);
+    const longfield = db.sqlsanitize(longtitude_field);
+    const fetchedRows = await tbl.getRows(qstate, {
+      orderBy: {
+        sql: `((${latfield}-${lat})*(${latfield}-${lat})) + ((${longfield} - ${long})*(${longfield} - ${long})*${cos_lat_2})`,
+      },
+    });
+    const rendered = await resview.viewtemplateObj.renderRows(
+      tbl,
+      resview.name,
+      resview.configuration,
+      extraArgs,
+      fetchedRows
+    );
+
+    return div(rendered.map((h) => div(h)));
   }
 };
 
