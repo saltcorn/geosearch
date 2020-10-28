@@ -7,6 +7,7 @@ const {
   style,
 } = require("@saltcorn/markup/tags");
 const { renderForm } = require("@saltcorn/markup");
+const { search_bar } = require("@saltcorn/markup/helpers");
 
 const View = require("@saltcorn/data/models/view");
 const Workflow = require("@saltcorn/data/models/workflow");
@@ -38,15 +39,11 @@ const configuration_workflow = () =>
 const get_state_fields = async (table_id) => [];
 
 const run = async (table_id, viewname, {}, state, extraArgs) => {
-  const form = new Form({
-    action: `/view/${viewname}`,
-    methodGET: true,
-    noSubmitButton: true,
-    fields: [{ name: "_locq", label: "Location", input_type: "search" }],
-  });
-  if (state._locq) form.values._locq = state._locq;
-
-  return renderForm(form, extraArgs.req.csrfToken());
+  return search_bar(
+    "_locq",
+    state._locq,
+    "(function(v){v ? set_state_field('_locq', v):unset_state_field('_locq');})($('.search-bar').val())"
+  );
 };
 
 module.exports = {

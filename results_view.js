@@ -141,12 +141,9 @@ const run = async (
         fetchedRows
       );
 
-      return (
-        renderForm(form, extraArgs.req.csrfToken()) +
-        div(rendered.map((h) => div(h)))
-      );
+      return div(rendered.map((h) => div(h)));
     } else {
-      return renderForm(form, extraArgs.req.csrfToken()) + div("Not found");
+      return div("Not found");
     }
   }
 };
