@@ -32,6 +32,34 @@ const configuration_workflow = () =>
           return new Form({
             fields: [
               {
+                name: "latitude_field",
+                label: "Latitude field",
+                type: "String",
+                sublabel:
+                  "The table need a fields of type 'Float' for latitude.",
+                required: true,
+                attributes: {
+                  options: fields
+                    .filter((f) => f.type.name === "Float")
+                    .map((f) => f.name)
+                    .join(),
+                },
+              },
+              {
+                name: "longtitude_field",
+                label: "Longtitude field",
+                type: "String",
+                sublabel:
+                  "The table need a fields of type 'Float' for longtitude.",
+                required: true,
+                attributes: {
+                  options: fields
+                    .filter((f) => f.type.name === "Float")
+                    .map((f) => f.name)
+                    .join(),
+                },
+              },
+              {
                 name: "mylocation",
                 label: "Allow current location",
                 type: "Bool",
@@ -45,18 +73,24 @@ const configuration_workflow = () =>
 
 const get_state_fields = async (table_id) => [];
 
-const usemylocscript = `
+const usemylocscript = ({ latitude_field, longtitude_field }) => `
 function use_my_location() {
   navigator.geolocation.getCurrentPosition(function(position) {
     set_state_fields({
-      _loclat:position.coords.latitude,
-      _loclong:position.coords.longitude,
+      _near_lat_${latitude_field}:position.coords.latitude,
+      _near_long_${longtitude_field}:position.coords.longitude,
     })    
   })
 }
 `;
 
-const run = async (table_id, viewname, { mylocation }, state, extraArgs) => {
+const run = async (
+  table_id,
+  viewname,
+  { mylocation, latitude_field, longtitude_field },
+  state,
+  extraArgs
+) => {
   const round = (x) => Math.round(x * 100) / 100;
   const placeHolder =
     state._loclat && state._loclong
@@ -69,8 +103,8 @@ const run = async (table_id, viewname, { mylocation }, state, extraArgs) => {
         "(function(v){v ? set_state_field('_locq', v):unset_state_field('_locq');})($('.search-bar').val())",
     }) +
     (mylocation
-      ? a({ href: "javascript:use_my_location()" }, "Use my current location") +
-        script(usemylocscript)
+      ? a({ href: `javascript:use_my_location()` }, "Use my current location") +
+        script(usemylocscript({ latitude_field, longtitude_field }))
       : "")
   );
 };
