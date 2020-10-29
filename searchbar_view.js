@@ -110,8 +110,10 @@ const run = async (
   const latStateField = `_near_lat_${latitude_field}`;
   const longStateField = `_near_long_${longtitude_field}`;
   const placeHolder =
-    state._loclat && state._loclong
-      ? `[${round(state._loclat)}&deg;, ${round(state._loclong)}&deg;]`
+    state[latStateField] && state[longStateField]
+      ? `[${round(state[latStateField])}&deg;, ${round(
+          state[longStateField]
+        )}&deg;]`
       : "Enter Location...";
   let choices = "";
   if (state._locq && !(state[latStateField] && state[longStateField])) {
