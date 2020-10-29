@@ -79,8 +79,23 @@ function use_my_location() {
     set_state_fields({
       _near_lat_${latitude_field}:position.coords.latitude,
       _near_long_${longtitude_field}:position.coords.longitude,
+      _locq: {unset: true}
     })    
   })
+}
+function use_this_location(lat,long, nm) {
+  set_state_fields({
+    _near_lat_${latitude_field}:lat,
+    _near_long_${longtitude_field}:long,
+    _locq: nm
+  })    
+}
+function search_location(q) {
+  set_state_fields({
+    _near_lat_${latitude_field}:{unset: true},
+    _near_long_${longtitude_field}:{unset: true},
+    _locq: q
+  })    
 }
 `;
 
@@ -92,23 +107,43 @@ const run = async (
   extraArgs
 ) => {
   const round = (x) => Math.round(x * 100) / 100;
+  const latStateField = `_near_lat_${latitude_field}`;
+  const longStateField = `_near_long_${longtitude_field}`;
   const placeHolder =
     state._loclat && state._loclong
       ? `[${round(state._loclat)}&deg;, ${round(state._loclong)}&deg;]`
       : "Enter Location...";
+  let choices = "";
+  if (state._locq && !(state[latStateField] && state[longStateField])) {
+    const response = await geocoder.search({ q: state._locq });
+    db.sql_log({ response });
+    choices = div(
+      "Possible locations:",
+      response.map((r) =>
+        div(
+          a(
+            {
+              href: `javascript:use_this_location(${r.lat},${r.lon}, '${r.display_name}')`,
+            },
+            "&rarr;",
+            r.display_name
+          )
+        )
+      )
+    );
+  }
   return (
     search_bar("_locq", state._locq, {
       placeHolder,
-      onClick:
-        "(function(v){v ? set_state_field('_locq', v):unset_state_field('_locq');})($('.search-bar').val())",
+      onClick: "search_location($('.search-bar').val())",
     }) +
+    choices +
     (mylocation
       ? a({ href: `javascript:use_my_location()` }, "Use my current location") +
         script(usemylocscript({ latitude_field, longtitude_field }))
       : "")
   );
 };
-
 module.exports = {
   name: "Geosearch input",
   display_state_form: false,
