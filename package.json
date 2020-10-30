@@ -1,11 +1,11 @@
 {
   "name": "@saltcorn/geosearch",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Geo search view templates",
   "main": "index.js",
   "dependencies": {
-    "@saltcorn/markup": "^0.2.0",
-    "@saltcorn/data": "^0.2.0",
+    "@saltcorn/markup": "^0.2.2",
+    "@saltcorn/data": "^0.2.2",
     "nominatim-geocoder": "^0.1.4"
   },
   "author": "Tom Nielsen",
