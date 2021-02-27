@@ -137,7 +137,7 @@ const run = async (
   return (
     search_bar("_locq", state._locq, {
       placeHolder,
-      onClick: "search_location($('.search-bar').val())",
+      onClick: "search_location($('input.search-bar').val())",
     }) +
     choices +
     (mylocation
