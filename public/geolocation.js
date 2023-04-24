@@ -8,12 +8,15 @@ function activate_user_location_input(nm, longorlat, active) {
     $("input[name=" + nm + "]").after(
       '<button type="button" id="user-locator-activate" class="' +
         cls +
-        '" onclick="click_user_location_input()">Locate</button>'
+        '" onclick="click_user_location_input()">Locate' +
+        (active ? "d" : "") +
+        "</button>"
     );
   }
 }
 
 function click_user_location_input() {
+  $("button#user-locator-activate").text("Locating...");
   navigator.geolocation.getCurrentPosition(function (pos) {
     $("input[name=" + user_location_fields.lat + "]").val(pos.coords.latitude);
     $("input[name=" + user_location_fields.long + "]").val(
@@ -21,14 +24,15 @@ function click_user_location_input() {
     );
     $("button#user-locator-activate")
       .removeClass("btn-outline-secondary")
-      .addClass("btn-secondary");
+      .addClass("btn-secondary")
+      .text("Located");
   }, geoLocationError);
 }
 
 function geoLocationError(e) {
   let txt = "";
-  const _geoloc_is_Android = /(android)/i.test(navigator.userAgent);
-  const _geoloc_is_iOS =
+  const Android = /(android)/i.test(navigator.userAgent);
+  const iOS =
     [
       "iPad Simulator",
       "iPhone Simulator",
@@ -40,12 +44,12 @@ function geoLocationError(e) {
     // iPad on iOS 13 detection
     (navigator.userAgent.includes("Mac") && "ontouchend" in document);
 
-  if (_geoloc_is_iOS) {
+  if (iOS) {
     txt =
       "Geolocation error: " +
       e.message +
       "<br>To enable geolocation on iOS, go to Device settings, Privacy, and enable Location services for your browser";
-  } else if (_geoloc_is_Android) {
+  } else if (Android) {
     txt =
       "Geolocation error: " +
       e.message +
