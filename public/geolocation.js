@@ -30,6 +30,7 @@ function click_user_location_input() {
 }
 
 function geoLocationError(e) {
+  $("button#user-locator-activate").text("Locate");
   let txt = "";
   const Android = /(android)/i.test(navigator.userAgent);
   const iOS =
@@ -43,8 +44,10 @@ function geoLocationError(e) {
     ].includes(navigator.platform) ||
     // iPad on iOS 13 detection
     (navigator.userAgent.includes("Mac") && "ontouchend" in document);
-
-  if (iOS) {
+  const mobile = typeof parent?.saltcorn?.data !== "undefined";
+  if (mobile) {
+    txt = "Geolocation error: " + e.message + ""; // an allow access dialog comes up
+  } else if (iOS) {
     txt =
       "Geolocation error: " +
       e.message +

@@ -97,6 +97,15 @@ function search_location(q) {
     _locq: q
   })    
 }
+function call_search_location() {
+  const inputObj = $("input.search-bar");
+  const q = inputObj.val()
+    ? inputObj.val()
+    : inputObj[0].placeholder?.startsWith("[")
+    ? inputObj[0].placeholder.replaceAll("\u00B0", "") // remove degree symbol
+    : "";
+  search_location(q);
+}
 `;
 
 const run = async (
@@ -104,7 +113,8 @@ const run = async (
   viewname,
   { mylocation, latitude_field, longtitude_field },
   state,
-  extraArgs
+  extraArgs,
+  queryObj
 ) => {
   const round = (x) => Math.round(x * 100) / 100;
   const latStateField = `_near_lat_${latitude_field}`;
@@ -117,8 +127,9 @@ const run = async (
       : "Enter Location...";
   let choices = "";
   if (state._locq && !(state[latStateField] && state[longStateField])) {
-    const response = await geocoder.search({ q: state._locq });
-    db.sql_log({ response });
+    const response = queryObj?.geocoder_query
+      ? await queryObj.geocoder_query(state._locq)
+      : await geocoder_query_impl(state._locq);
     choices = div(
       "Possible locations:",
       response.map((r) =>
@@ -137,7 +148,7 @@ const run = async (
   return (
     search_bar("_locq", state._locq, {
       placeHolder,
-      onClick: "search_location($('input.search-bar').val())",
+      onClick: "call_search_location()",
     }) +
     choices +
     (mylocation
@@ -146,10 +157,20 @@ const run = async (
       : "")
   );
 };
+const geocoder_query_impl = async (locq) => {
+  const response = await geocoder.search({ q: locq });
+  db.sql_log({ response });
+  return response;
+};
 module.exports = {
   name: "Geosearch input",
   display_state_form: false,
   get_state_fields,
   configuration_workflow,
   run,
+  queries: ({}) => ({
+    async geocoder_query(locq) {
+      return await geocoder_query_impl(locq);
+    },
+  }),
 };
