@@ -168,7 +168,7 @@ module.exports = {
   get_state_fields,
   configuration_workflow,
   run,
-  queries: ({}) => ({
+  queries: () => ({
     async geocoder_query(locq) {
       return await geocoder_query_impl(locq);
     },
