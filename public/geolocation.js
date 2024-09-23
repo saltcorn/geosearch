@@ -30,6 +30,7 @@ function click_user_location_input() {
 }
 
 function geoLocationError(e) {
+  console.log("geologation error", e);
   $("button#user-locator-activate").text("Locate");
   let txt = "";
   const Android = /(android)/i.test(navigator.userAgent);
@@ -58,7 +59,6 @@ function geoLocationError(e) {
       e.message +
       "<br>To enable geolocation on Android, go to Device settings, Location, and enable for your browser";
   } else txt = "Geolocation error: " + e.message + "";
-
   notifyAlert({
     type: "danger",
     text: txt,
