@@ -1,4 +1,5 @@
 const user_location_fields = {};
+const isMobile = typeof parent?.saltcorn?.data !== "undefined";
 
 function activate_user_location_input(nm, longorlat, active) {
   user_location_fields[longorlat] = nm;
@@ -17,7 +18,7 @@ function activate_user_location_input(nm, longorlat, active) {
 
 function click_user_location_input() {
   $("button#user-locator-activate").text("Locating...");
-  navigator.geolocation.getCurrentPosition(function (pos) {
+  const posCb = (pos) => {
     $("input[name=" + user_location_fields.lat + "]").val(pos.coords.latitude);
     $("input[name=" + user_location_fields.long + "]").val(
       pos.coords.longitude
@@ -26,7 +27,10 @@ function click_user_location_input() {
       .removeClass("btn-outline-secondary")
       .addClass("btn-secondary")
       .text("Located");
-  }, geoLocationError);
+  };
+  if (isMobile)
+    parent.saltcorn.mobileApp.common.getGeolocation(posCb, geoLocationError);
+  else navigator.geolocation.getCurrentPosition(posCb, geoLocationError);
 }
 
 function geoLocationError(e) {
@@ -45,8 +49,7 @@ function geoLocationError(e) {
     ].includes(navigator.platform) ||
     // iPad on iOS 13 detection
     (navigator.userAgent.includes("Mac") && "ontouchend" in document);
-  const mobile = typeof parent?.saltcorn?.data !== "undefined";
-  if (mobile) {
+  if (isMobile) {
     txt = "Geolocation error: " + e.message + ""; // an allow access dialog comes up
   } else if (iOS) {
     txt =

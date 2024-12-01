@@ -12,4 +12,5 @@ module.exports = {
       }/geolocation.js`,
     },
   ],
+  ready_for_mobile: true,
 };
