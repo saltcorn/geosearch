@@ -1,5 +1,7 @@
 const user_location_fields = {};
 const isMobile = typeof parent?.saltcorn?.data !== "undefined";
+const isCapacitor =
+  isMobile && typeof parent.saltcorn.mobileApp !== "undefined";
 
 function activate_user_location_input(nm, longorlat, active) {
   user_location_fields[longorlat] = nm;
@@ -28,7 +30,7 @@ function click_user_location_input() {
       .addClass("btn-secondary")
       .text("Located");
   };
-  if (isMobile)
+  if (isCapacitor)
     parent.saltcorn.mobileApp.common.getGeolocation(posCb, geoLocationError);
   else navigator.geolocation.getCurrentPosition(posCb, geoLocationError);
 }
