@@ -31,7 +31,10 @@ function click_user_location_input() {
       .text("Located");
   };
   if (isCapacitor)
-    parent.saltcorn.mobileApp.common.getGeolocation(posCb, geoLocationError);
+    parent.saltcorn.mobileApp.plugins.geosearch.getLocation(
+      posCb,
+      geoLocationError
+    );
   else navigator.geolocation.getCurrentPosition(posCb, geoLocationError);
 }
 
