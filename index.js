@@ -1,8 +1,9 @@
 const searchbar = require("./searchbar_view");
+const backgroundLocator = require("./background_locator");
 
 module.exports = {
   sc_plugin_api_version: 1,
-  viewtemplates: [searchbar],
+  viewtemplates: [searchbar, backgroundLocator],
   plugin_name: "geosearch",
   fieldviews: require("./fieldviews"),
   headers: [
@@ -27,4 +28,5 @@ module.exports = {
       androidFeatures: ["android.hardware.location.gps"],
     },
   ],
+  eventTypes: { ReceiveLocation: { hasChannel: false } },
 };
