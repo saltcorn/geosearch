@@ -17,13 +17,13 @@ module.exports = {
   capacitor_plugins: [
     {
       name: "@capacitor-community/background-geolocation",
-      version: "1.2.21",
+      version: "1.2.26",
       androidPermissions: ["ACCESS_BACKGROUND_LOCATION"],
       androidFeatures: ["android.hardware.location.gps"],
     },
     {
       name: "@capacitor/geolocation",
-      version: "6.0.2",
+      version: "7.1.6",
       androidPermissions: ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
       androidFeatures: ["android.hardware.location.gps"],
     },
