@@ -1,5 +1,6 @@
 const searchbar = require("./searchbar_view");
 const backgroundLocator = require("./background_locator");
+const { features } = require("@saltcorn/data/db/state");
 
 module.exports = {
   sc_plugin_api_version: 1,
@@ -17,13 +18,13 @@ module.exports = {
   capacitor_plugins: [
     {
       name: "@capacitor-community/background-geolocation",
-      version: "1.2.21",
+      version: features.capacitor_version === 7 ? "1.2.26" : "1.2.21",
       androidPermissions: ["ACCESS_BACKGROUND_LOCATION"],
       androidFeatures: ["android.hardware.location.gps"],
     },
     {
       name: "@capacitor/geolocation",
-      version: "6.0.2",
+      version: features.capacitor_version === 7 ?  "7.1.6" : "6.0.2",
       androidPermissions: ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"],
       androidFeatures: ["android.hardware.location.gps"],
     },

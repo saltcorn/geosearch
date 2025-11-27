@@ -7,7 +7,7 @@
     "@saltcorn/markup": "^0.2.2",
     "@saltcorn/data": "^0.2.2",
     "nominatim-geocoder": "^0.1.4",
-    "axios": "0.16.2"
+    "axios": "^0.30.2"
   },
   "author": "Tom Nielsen",
   "license": "MIT",
